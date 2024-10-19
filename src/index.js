@@ -501,11 +501,6 @@ var DiscordHandler = class {
       (interaction) => __async(this, null, function* () {
         let _i = interaction;
         let _u = interaction.user;
-        console.log(interaction.customId)
-        console.log(interaction.commandName)
-        console.log(interaction.componentType)
-        console.log(interaction.user.username)
-        console.log(interaction.type)
 
         const interactionTypes = {
           1: 'Ping',
