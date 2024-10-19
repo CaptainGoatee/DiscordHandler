@@ -291,24 +291,23 @@ function registerButtons(_0) {
           deleted,
           run
         } = button;
-         
-          if (button.deleted) {
-            let message2 = `\u23E9 Skipping registering button "${customID}" as it's set to delete.`;
-            if (logger) {
-              logger.info(message2);
-            } else {
-              console.log(message2);
-            }
-            continue;
-          }
-          let message = `\u2705 Registered button "${customID}".`;
+        if (button.deleted) {
+          let message2 = `\u23E9 Skipping registering button "${customID}" as it's set to delete.`;
           if (logger) {
-            logger.info(message);
+            logger.info(message2);
           } else {
-            console.log(message);
+            console.log(message2);
           }
+          continue;
+        }
+        let message = `\u2705 Registered button "${customID}".`;
+        if (logger) {
+          logger.info(message);
+        } else {
+          console.log(message);
         }
       }
+    }
   );
 }
 var DiscordHandler = class {
@@ -320,7 +319,8 @@ var DiscordHandler = class {
     eventsPath,
     validationsPath,
     testServer,
-    logger
+    logger,
+    logInteractions,
   }) {
     if (!client)
       throw new Error(
@@ -341,10 +341,22 @@ var DiscordHandler = class {
     this._buttons = [];
     this._validationFuncs = [];
     this._logger = logger;
+    this._logInteractions = logInteractions;
     if (this._validationsPath && !commandsPath) {
       throw new Error(
         'Command validations are only available in the presence of a commands path. Either add "commandsPath" or remove "validationsPath"'
       );
+    }
+    let logStatus;
+    if (this._logInteractions) {
+      logStatus = 'Logging interactions enabled.';
+    } else {
+      logStatus = 'Logging interactions disabled. Interactions will not be logged in console.';
+    }
+    if (this._logger) {
+      this._logger.event(logStatus);
+    } else {
+      console.log(logStatus);
     }
     if (this._client && this._token) {
       try {
@@ -369,6 +381,7 @@ var DiscordHandler = class {
         this._validationsPath && this._validationsInit();
         this._handleCommands();
         this._handleButtons();
+        this._handleInteractionLogging();
       });
     }
     if (this._eventsPath) {
@@ -482,6 +495,54 @@ var DiscordHandler = class {
       })
     );
   }
+  _handleInteractionLogging() {
+    this._client.on(
+      "interactionCreate",
+      (interaction) => __async(this, null, function* () {
+        let _i = interaction;
+        let _u = interaction.user;
+        console.log(interaction.customId)
+        console.log(interaction.commandName)
+        console.log(interaction.componentType)
+        console.log(interaction.user.username)
+        console.log(interaction.type)
+
+        const interactionTypes = {
+          1: 'Ping',
+          2: 'ApplicationCommand',
+          3: 'MessageComponent',
+          4: 'ApplicationCommandAutocomplete',
+          5: 'ModalSubmit'
+        };
+        const componentTypes = {
+          1: 'ActionRow',
+          2: 'Button',
+          3: 'StringSelect',
+          4: 'TextInput',
+          5: 'UserSelect',
+          6: 'RoleSelect',
+          7: 'MentionableSelect' ,
+          8: 'ChannelSelect',
+          9: 'SelectMenu' ,
+        }
+
+        if (this._logInteractions) {
+          let messageLog;
+          if (interaction.commandName) {
+           messageLog = `${_u.username} has used ${interactionTypes[_i.type]} - "${_i.commandName}".`
+          } else {
+            messageLog = `${_u.username} has used a ${componentTypes[_i.componentType]} - "${_i.customId}".`
+          }
+          if (this._logger) {
+            yield this._logger.event(messageLog);
+          } else {
+            console.log(messageLog);
+          }
+        }
+      }
+      )
+    );
+  }
   _handleButtons() {
     this._client.on(
       "interactionCreate",
@@ -491,34 +552,11 @@ var DiscordHandler = class {
           (btn) => btn.customID === interaction.customId
         );
         if (button) {
-          // if (this._validationFuncs.length) {
-          //   let canRun = true;
-            // for (const validationFunc of this._validationFuncs) {
-            //   const cantRunCommand = yield validationFunc(
-            //     interaction,
-            //     command,
-            //     this,
-            //     this._client
-            //   );
-            //   if (cantRunCommand) {
-            //     canRun = false;
-            //     break;
-            //   }
-            // }
-            // if (canRun) {
-            //   yield button.run({
-            //     interaction,
-            //     client: this._client,
-            //     handler: this
-            //   });
-            // }
-          // } else {
-            yield button.run({
-              interaction,
-              client: this._client,
-              handler: this
-            });
-          // }
+          yield button.run({
+            interaction,
+            client: this._client,
+            handler: this
+          });
         }
       })
     );
