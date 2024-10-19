@@ -1,4 +1,7 @@
+<!-- @format -->
+
 # DiscordHandler: A Library for Discord.js Projects
+
 ## Full Credit to NotUnderCtrl
 
 DiscordHandler is an easy-to-use JavaScript library that simplifies the process of handling commands, events, and validations in your Discord.js projects.
@@ -29,10 +32,13 @@ yarn add goated-discord-handler
 
 ```js
 // index.js
-const { Client, IntentsBitField } = require("discord.js");
+const { Client, IntentsBitField, interaction } = require("discord.js");
 const { DiscordHandler } = require("goated-discord-handler");
 const { Logger } = require("term-logger"); // Fancy Colourful Console Logger
 const path = require("path");
+require("dotenv").config();
+
+const token = process.env.DISCORD_TOKEN;
 
 const client = new Client({
   intents: [IntentsBitField.Flags.Guilds], // Your bot's intents
@@ -40,12 +46,13 @@ const client = new Client({
 
 new DiscordHandler({
   client, // Discord.js client object
-  token:
-    "YOUR_TOKEN_HERE", // Your bot token
+  token,
   commandsPath: path.join(__dirname, "commands"), // The commands folder
+  buttonsPath: path.join(__dirname, "buttons"), // The commands folder
   eventsPath: path.join(__dirname, "events"), // The events folder
   validationsPath: path.join(__dirname, "validations"), // Only works if commandsPath is provided
   logger: Logger, // Changes the console output to match the specified logger configuration (if not provided logging will go through console.log)
+  logInteractions: true, // If true, will log interactions made with the bot in your console.
 });
 ```
 
@@ -68,10 +75,10 @@ Any file inside the commands directory will be considered a command file, so mak
 
 ```js
 // commands/misc/ping.js
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder } = require("discord.js");
 
 module.exports = {
-  data: new SlashCommandBuilder().setName('ping').setDescription('Pong!'),
+  data: new SlashCommandBuilder().setName("ping").setDescription("Pong!"),
 
   run: ({ interaction, client, handler }) => {
     interaction.reply(`Pong! ${client.ws.ping}ms`);
@@ -81,10 +88,38 @@ module.exports = {
 };
 ```
 
-- `interaction`
+- `interaction` is the interaction object.
 - `client` is the discord.js Client instance.
 - `handler` is the DiscordHandler instance. You can use this to get access to properties such as `commands`.
 
+---
+
+### Buttons
+
+DiscordHandler gives you the ability to keep your buttons as seperate interactions and treats them as separate interactions. Your file structure would look like this:
+
+```shell
+buttons/
+├── button1.js
+├── button2.js
+└── category/
+| ├── button3.js
+```
+
+Make sure each file exports a fuctions that has a custom ID like this.
+
+```js
+// buttons/reply.js
+module.exports = {
+  customID: "reply",
+  run: ({ interaction, client, handler }) => {
+    interaction.reply(`Pong! ${client.ws.ping}ms`);
+  },
+};
+```
+- `interaction` is the interaction object.
+- `client` is the discord.js Client instance.
+- `handler` is the DiscordHandler instance. You can use this to get access to properties such as `commands`.
 ---
 
 ### Events
@@ -135,8 +170,8 @@ Make sure each file exports a default function. Like this:
 // validations/dev-only.js
 module.exports = (interaction, commandObj, handler, client) => {
   if (commandObj.devOnly) {
-    if (interaction.member.id !== 'DEVELOPER_ID') {
-      interaction.reply('This command is for the developer only');
+    if (interaction.member.id !== "DEVELOPER_ID") {
+      interaction.reply("This command is for the developer only");
       return true; // This must be added to stop the command from being executed.
     }
   }
