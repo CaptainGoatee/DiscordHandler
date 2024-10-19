@@ -34,9 +34,6 @@ const { Client, IntentsBitField, interaction } = require("discord.js");
 const { DiscordHandler } = require("goated-discord-handler");
 const { Logger } = require("term-logger"); // Fancy Colourful Console Logger
 const path = require("path");
-require("dotenv").config();
-
-const token = process.env.DISCORD_TOKEN;
 
 const client = new Client({
   intents: [IntentsBitField.Flags.Guilds], // Your bot's intents
@@ -44,7 +41,7 @@ const client = new Client({
 
 new DiscordHandler({
   client, // Discord.js client object
-  token,
+  token: 'YOUR_TOKEN_HERE',
   commandsPath: path.join(__dirname, "commands"), // The commands folder
   buttonsPath: path.join(__dirname, "buttons"), // The commands folder
   eventsPath: path.join(__dirname, "events"), // The events folder
