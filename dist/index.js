@@ -286,45 +286,14 @@ function registerButtons(_0) {
     arguments,
     function* ({ client, buttons, logger }) {
       for (const button of buttons) {
-        console.log(button);
         const {
-          name,
-          name_localizations,
-          description,
-          description_localizations,
-          default_member_permissions,
-          dm_permission,
-          options
-        } = localCommand;
-        const existingCommand = applicationCommands.cache.find(
-          (cmd) => cmd.name === name
-        );
-        if (existingCommand) {
-          if (localCommand.deleted) {
-            yield applicationCommands.delete(existingCommand.id);
-            let message = `\u{1F5D1} Deleted command "${name}".`;
-            if (logger) {
-              logger.info(message);
-            } else {
-              console.log(message);
-            }
-            continue;
-          }
-          if (areCommandsDifferent(existingCommand, localCommand)) {
-            yield applicationCommands.edit(existingCommand.id, {
-              description,
-              options
-            });
-            let message = `\u{1F501} Edited command "${name}".`;
-            if (logger) {
-              logger.info(message);
-            } else {
-              console.log(message);
-            }
-          }
-        } else {
-          if (localCommand.deleted) {
-            let message2 = `\u23E9 Skipping registering command "${name}" as it's set to delete.`;
+          customID,
+          deleted,
+          run
+        } = button;
+         
+          if (button.deleted) {
+            let message2 = `\u23E9 Skipping registering button "${customID}" as it's set to delete.`;
             if (logger) {
               logger.info(message2);
             } else {
@@ -332,16 +301,7 @@ function registerButtons(_0) {
             }
             continue;
           }
-          yield applicationCommands.create({
-            name,
-            name_localizations,
-            description,
-            description_localizations,
-            default_member_permissions,
-            dm_permission,
-            options
-          });
-          let message = `\u2705 Registered command "${name}".`;
+          let message = `\u2705 Registered button "${customID}".`;
           if (logger) {
             logger.info(message);
           } else {
@@ -349,7 +309,6 @@ function registerButtons(_0) {
           }
         }
       }
-    }
   );
 }
 var DiscordHandler = class {
@@ -519,6 +478,47 @@ var DiscordHandler = class {
               handler: this
             });
           }
+        }
+      })
+    );
+  }
+  _handleButtons() {
+    this._client.on(
+      "interactionCreate",
+      (interaction) => __async(this, null, function* () {
+        if (!interaction.isButton()) return;
+        const button = this._buttons.find(
+          (btn) => btn.customID === interaction.customId
+        );
+        if (button) {
+          // if (this._validationFuncs.length) {
+          //   let canRun = true;
+            // for (const validationFunc of this._validationFuncs) {
+            //   const cantRunCommand = yield validationFunc(
+            //     interaction,
+            //     command,
+            //     this,
+            //     this._client
+            //   );
+            //   if (cantRunCommand) {
+            //     canRun = false;
+            //     break;
+            //   }
+            // }
+            // if (canRun) {
+            //   yield button.run({
+            //     interaction,
+            //     client: this._client,
+            //     handler: this
+            //   });
+            // }
+          // } else {
+            yield button.run({
+              interaction,
+              client: this._client,
+              handler: this
+            });
+          // }
         }
       })
     );

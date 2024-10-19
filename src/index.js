@@ -1,6 +1,6 @@
-/** @format */
-
 "use strict";
+
+// src/index.js
 var __defProp = Object.defineProperty;
 var __defProps = Object.defineProperties;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -9,21 +9,20 @@ var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getOwnPropSymbols = Object.getOwnPropertySymbols;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __propIsEnum = Object.prototype.propertyIsEnumerable;
-var __defNormalProp = (obj, key, value) =>
-  key in obj
-    ? __defProp(obj, key, {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value,
-      })
-    : (obj[key] = value);
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, {
+  enumerable: true,
+  configurable: true,
+  writable: true,
+  value
+}) : obj[key] = value;
 var __spreadValues = (a, b) => {
   for (var prop in b || (b = {}))
-    if (__hasOwnProp.call(b, prop)) __defNormalProp(a, prop, b[prop]);
+    if (__hasOwnProp.call(b, prop))
+      __defNormalProp(a, prop, b[prop]);
   if (__getOwnPropSymbols)
     for (var prop of __getOwnPropSymbols(b)) {
-      if (__propIsEnum.call(b, prop)) __defNormalProp(a, prop, b[prop]);
+      if (__propIsEnum.call(b, prop))
+        __defNormalProp(a, prop, b[prop]);
     }
   return a;
 };
@@ -40,27 +39,25 @@ var __objRest = (source, exclude) => {
     }
   return target;
 };
-var __esm = (fn, res) =>
-  function __init() {
-    return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])((fn = 0))), res;
-  };
+var __esm = (fn, res) => function __init() {
+  return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+};
 var __export = (target, all) => {
   for (var name in all)
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 var __copyProps = (to, from, except, desc) => {
-  if ((from && typeof from === "object") || typeof from === "function") {
+  if (from && typeof from === "object" || typeof from === "function") {
     for (let key of __getOwnPropNames(from))
       if (!__hasOwnProp.call(to, key) && key !== except)
         __defProp(to, key, {
           get: () => from[key],
-          enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable,
+          enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable
         });
   }
   return to;
 };
-var __toCommonJS = (mod) =>
-  __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var __async = (__this, __arguments, generator) => {
   return new Promise((resolve, reject) => {
     var fulfilled = (value) => {
@@ -77,23 +74,19 @@ var __async = (__this, __arguments, generator) => {
         reject(e);
       }
     };
-    var step = (x) =>
-      x.done
-        ? resolve(x.value)
-        : Promise.resolve(x.value).then(fulfilled, rejected);
+    var step = (x) => x.done ? resolve(x.value) : Promise.resolve(x.value).then(fulfilled, rejected);
     step((generator = generator.apply(__this, __arguments)).next());
   });
 };
-
-// src/utils/getPaths.ts
 var getPaths_exports = {};
 __export(getPaths_exports, {
   getFilePaths: () => getFilePaths,
-  getFolderPaths: () => getFolderPaths,
+  getFolderPaths: () => getFolderPaths
 });
 function getFilePaths(directory, nesting) {
   let filePaths = [];
-  if (!directory) return filePaths;
+  if (!directory)
+    return filePaths;
   const files = fs.readdirSync(directory, { withFileTypes: true });
   for (const file of files) {
     const filePath = path.join(directory, file.name);
@@ -108,7 +101,8 @@ function getFilePaths(directory, nesting) {
 }
 function getFolderPaths(directory, nesting) {
   let folderPaths = [];
-  if (!directory) return folderPaths;
+  if (!directory)
+    return folderPaths;
   const folders = fs.readdirSync(directory, { withFileTypes: true });
   for (const folder of folders) {
     const folderPath = path.join(directory, folder.name);
@@ -121,50 +115,47 @@ function getFolderPaths(directory, nesting) {
   }
   return folderPaths;
 }
-var fs, path;
+var fs;
+var path;
 var init_getPaths = __esm({
   "src/utils/getPaths.ts"() {
     "use strict";
     fs = require("fs");
     path = require("path");
-  },
+  }
 });
-
-// src/index.ts
 var src_exports = {};
 __export(src_exports, {
-  DiscordHandler: () => DiscordHandler,
+  DiscordHandler: () => DiscordHandler
 });
 module.exports = __toCommonJS(src_exports);
 init_getPaths();
-
-// src/utils/buildCommandTree.ts
-var { getFilePaths: getFilePaths2 } =
-  (init_getPaths(), __toCommonJS(getPaths_exports));
+var { getFilePaths: getFilePaths2 } = (init_getPaths(), __toCommonJS(getPaths_exports));
 function buildCommandTree(commandsDir) {
   const commandTree = [];
-  if (!commandsDir) return [];
+  if (!commandsDir)
+    return [];
   const commandFilePaths = getFilePaths2(commandsDir, true);
   for (const commandFilePath of commandFilePaths) {
-    let _a = require(commandFilePath),
-      { data, run, deleted } = _a,
-      rest = __objRest(_a, ["data", "run", "deleted"]);
-    if (!data) throw new Error(`File ${commandFilePath} must export "data".`);
+    let _a = require(commandFilePath), { data: data2, run, deleted } = _a, rest = __objRest(_a, ["data", "run", "deleted"]);
+    if (!data2)
+      throw new Error(`File ${commandFilePath} must export "data".`);
     if (!run)
       throw new Error(`File ${commandFilePath} must export a "run" function.`);
-    if (!data.name)
+    if (!data2.name)
       throw new Error(`File ${commandFilePath} must have a command name.`);
-    if (!data.description)
+    if (!data2.description)
       throw new Error(
         `File ${commandFilePath} must have a command description.`
       );
     try {
-      data = data.toJSON();
-    } catch (error) {}
+      data2 = data2.toJSON();
+    } catch (error) {
+    }
     commandTree.push(
-      __spreadProps(__spreadValues(__spreadValues({}, data), rest), {
+      __spreadProps(__spreadValues(__spreadValues({}, data2), rest), {
         deleted,
-        run,
+        run
       })
     );
   }
@@ -172,69 +163,58 @@ function buildCommandTree(commandsDir) {
 }
 function buildButtonsTree(buttonsDir) {
   const buttonTree = [];
-  if (!buttonsDir) return [];
+  if (!buttonsDir)
+    return [];
   const buttonFilePaths = getFilePaths2(buttonsDir, true);
   for (const buttonFilePath of buttonFilePaths) {
-    let _a = require(buttonFilePath),
-      { customID, run, deleted } = _a,
-      rest = __objRest(_a, ["customID", "run", "deleted"]);
+    let _a = require(buttonFilePath), { customID, run, deleted } = _a, rest = __objRest(_a, ["customID", "run", "deleted"]);
     if (!customID)
       throw new Error(`File ${buttonFilePath} must export "customID".`);
     if (!run)
       throw new Error(`File ${buttonFilePath} must export a "run" function.`);
     try {
       data = data.toJSON();
-    } catch (error) {}
+    } catch (error) {
+    }
     buttonTree.push({
       customID,
       deleted,
-      run,
+      run
     });
   }
   return buttonTree;
 }
-
-// src/utils/getAppCommands.ts
 function getAppCommands(client, guildId) {
   return __async(this, null, function* () {
-    let applicationCommands;
+    let applicationCommands2;
     if (guildId) {
       const guild = yield client.guilds.fetch(guildId);
-      applicationCommands = guild.commands;
+      applicationCommands2 = guild.commands;
     } else {
-      applicationCommands = yield client.application.commands;
+      applicationCommands2 = yield client.application.commands;
     }
-    yield applicationCommands.fetch();
-    return applicationCommands;
+    yield applicationCommands2.fetch();
+    return applicationCommands2;
   });
 }
-
-// src/utils/areCommandsDifferent.ts
-function areCommandsDifferent(existingCommand, localCommand) {
+function areCommandsDifferent(existingCommand, localCommand2) {
   var _a, _b;
-  if (
-    localCommand.description !== existingCommand.description ||
-    (((_a = localCommand.options) == null ? void 0 : _a.length) || 0) !==
-      ((_b = existingCommand.options) == null ? void 0 : _b.length)
-  ) {
+  if (localCommand2.description !== existingCommand.description || (((_a = localCommand2.options) == null ? void 0 : _a.length) || 0) !== ((_b = existingCommand.options) == null ? void 0 : _b.length)) {
     return true;
   } else {
     return false;
   }
 }
-// src/utils/startApp.ts
 function attemptAppLogin(client, token) {
   client.login(token);
 }
-
-// src/utils/registerCommands.ts
 function registerCommands(_0) {
   return __async(
     this,
     arguments,
     function* ({ client, commands: localCommands, testServer, logger }) {
-      const applicationCommands = yield getAppCommands(client, testServer);
-      for (const localCommand of localCommands) {
+      const applicationCommands2 = yield getAppCommands(client, testServer);
+      for (const localCommand2 of localCommands) {
         const {
           name,
           name_localizations,
@@ -242,14 +222,14 @@ function registerCommands(_0) {
           description_localizations,
           default_member_permissions,
           dm_permission,
-          options,
-        } = localCommand;
-        const existingCommand = applicationCommands.cache.find(
+          options
+        } = localCommand2;
+        const existingCommand = applicationCommands2.cache.find(
           (cmd) => cmd.name === name
         );
         if (existingCommand) {
-          if (localCommand.deleted) {
-            yield applicationCommands.delete(existingCommand.id);
+          if (localCommand2.deleted) {
+            yield applicationCommands2.delete(existingCommand.id);
             let message = `\u{1F5D1} Deleted command "${name}".`;
             if (logger) {
               logger.info(message);
@@ -258,10 +238,10 @@ function registerCommands(_0) {
             }
             continue;
           }
-          if (areCommandsDifferent(existingCommand, localCommand)) {
-            yield applicationCommands.edit(existingCommand.id, {
+          if (areCommandsDifferent(existingCommand, localCommand2)) {
+            yield applicationCommands2.edit(existingCommand.id, {
               description,
-              options,
+              options
             });
             let message = `\u{1F501} Edited command "${name}".`;
             if (logger) {
@@ -271,7 +251,7 @@ function registerCommands(_0) {
             }
           }
         } else {
-          if (localCommand.deleted) {
+          if (localCommand2.deleted) {
             let message2 = `\u23E9 Skipping registering command "${name}" as it's set to delete.`;
             if (logger) {
               logger.info(message2);
@@ -280,14 +260,14 @@ function registerCommands(_0) {
             }
             continue;
           }
-          yield applicationCommands.create({
+          yield applicationCommands2.create({
             name,
             name_localizations,
             description,
             description_localizations,
             default_member_permissions,
             dm_permission,
-            options,
+            options
           });
           let message = `\u2705 Registered command "${name}".`;
           if (logger) {
@@ -300,52 +280,20 @@ function registerCommands(_0) {
     }
   );
 }
-// src/utils/registerCommands.ts
 function registerButtons(_0) {
   return __async(
     this,
     arguments,
     function* ({ client, buttons, logger }) {
       for (const button of buttons) {
-        console.log(button)
         const {
-          name,
-          name_localizations,
-          description,
-          description_localizations,
-          default_member_permissions,
-          dm_permission,
-          options,
-        } = localCommand;
-        const existingCommand = applicationCommands.cache.find(
-          (cmd) => cmd.name === name
-        );
-        if (existingCommand) {
-          if (localCommand.deleted) {
-            yield applicationCommands.delete(existingCommand.id);
-            let message = `\u{1F5D1} Deleted command "${name}".`;
-            if (logger) {
-              logger.info(message);
-            } else {
-              console.log(message);
-            }
-            continue;
-          }
-          if (areCommandsDifferent(existingCommand, localCommand)) {
-            yield applicationCommands.edit(existingCommand.id, {
-              description,
-              options,
-            });
-            let message = `\u{1F501} Edited command "${name}".`;
-            if (logger) {
-              logger.info(message);
-            } else {
-              console.log(message);
-            }
-          }
-        } else {
-          if (localCommand.deleted) {
-            let message2 = `\u23E9 Skipping registering command "${name}" as it's set to delete.`;
+          customID,
+          deleted,
+          run
+        } = button;
+         
+          if (button.deleted) {
+            let message2 = `\u23E9 Skipping registering button "${customID}" as it's set to delete.`;
             if (logger) {
               logger.info(message2);
             } else {
@@ -353,16 +301,7 @@ function registerButtons(_0) {
             }
             continue;
           }
-          yield applicationCommands.create({
-            name,
-            name_localizations,
-            description,
-            description_localizations,
-            default_member_permissions,
-            dm_permission,
-            options,
-          });
-          let message = `\u2705 Registered command "${name}".`;
+          let message = `\u2705 Registered button "${customID}".`;
           if (logger) {
             logger.info(message);
           } else {
@@ -370,11 +309,8 @@ function registerButtons(_0) {
           }
         }
       }
-    }
   );
 }
-
-// src/index.ts
 var DiscordHandler = class {
   constructor({
     client,
@@ -384,7 +320,7 @@ var DiscordHandler = class {
     eventsPath,
     validationsPath,
     testServer,
-    logger,
+    logger
   }) {
     if (!client)
       throw new Error(
@@ -411,7 +347,6 @@ var DiscordHandler = class {
       );
     }
     if (this._client && this._token) {
-      // attempt to login to _client
       try {
         attemptAppLogin(this._client, this._token);
         let message = `\u2705 Logged into the DiscordAPI.`;
@@ -456,14 +391,14 @@ var DiscordHandler = class {
       client: this._client,
       commands: this._commands,
       testServer: this._testServer,
-      logger: this._logger,
+      logger: this._logger
     });
   }
   _registerButtonInteractions() {
     registerButtons({
       client: this._client,
       buttons: this._buttons,
-      logger: this._logger,
+      logger: this._logger
     });
   }
   _eventsInit() {
@@ -472,13 +407,16 @@ var DiscordHandler = class {
       const eventName = eventPath.replace(/\\/g, "/").split("/").pop();
       const eventFuncPaths = getFilePaths(eventPath, true);
       eventFuncPaths.sort();
-      if (!eventName) continue;
-      this._client.on(eventName, (...arg) =>
-        __async(this, null, function* () {
+      if (!eventName)
+        continue;
+      this._client.on(
+        eventName,
+        (...arg) => __async(this, null, function* () {
           for (const eventFuncPath of eventFuncPaths) {
             const eventFunc = require(eventFuncPath);
             const cantRunEvent = yield eventFunc(...arg, this._client, this);
-            if (cantRunEvent) break;
+            if (cantRunEvent)
+              break;
           }
         })
       );
@@ -498,17 +436,16 @@ var DiscordHandler = class {
     }
   }
   _handleCommands() {
-    this._client.on("interactionCreate", (interaction) =>
-      __async(this, null, function* () {
-        // Check which interaction has been ran i.e button slash etc
+    this._client.on(
+      "interactionCreate",
+      (interaction) => __async(this, null, function* () {
         if (interaction.isButton()) {
-          // Check if the button is in the buttons object
           if (this._buttons[interaction.customId]) {
-            // Run the command associated with the button
             yield this._buttons[interaction.customId](interaction);
           }
         }
-        if (!interaction.isChatInputCommand()) return;
+        if (!interaction.isChatInputCommand())
+          return;
         const command = this._commands.find(
           (cmd) => cmd.name === interaction.commandName
         );
@@ -531,16 +468,57 @@ var DiscordHandler = class {
               yield command.run({
                 interaction,
                 client: this._client,
-                handler: this,
+                handler: this
               });
             }
           } else {
             yield command.run({
               interaction,
               client: this._client,
-              handler: this,
+              handler: this
             });
           }
+        }
+      })
+    );
+  }
+  _handleButtons() {
+    this._client.on(
+      "interactionCreate",
+      (interaction) => __async(this, null, function* () {
+        if (!interaction.isButton()) return;
+        const button = this._buttons.find(
+          (btn) => btn.customID === interaction.customId
+        );
+        if (button) {
+          // if (this._validationFuncs.length) {
+          //   let canRun = true;
+            // for (const validationFunc of this._validationFuncs) {
+            //   const cantRunCommand = yield validationFunc(
+            //     interaction,
+            //     command,
+            //     this,
+            //     this._client
+            //   );
+            //   if (cantRunCommand) {
+            //     canRun = false;
+            //     break;
+            //   }
+            // }
+            // if (canRun) {
+            //   yield button.run({
+            //     interaction,
+            //     client: this._client,
+            //     handler: this
+            //   });
+            // }
+          // } else {
+            yield button.run({
+              interaction,
+              client: this._client,
+              handler: this
+            });
+          // }
         }
       })
     );
@@ -549,8 +527,3 @@ var DiscordHandler = class {
     return this._commands;
   }
 };
-// Annotate the CommonJS export names for ESM import in node:
-0 &&
-  (module.exports = {
-    DiscordHandler,
-  });
