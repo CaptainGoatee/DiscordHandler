@@ -1,0 +1,38 @@
+{
+  "name": "discord-handler",
+  "version": "0.0.10",
+  "description": "A discord handler for Discord.JS",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "scripts": {
+    "tsc": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CaptainGoatee/DiscordHandler.git"
+  },
+  "homepage": "https://www.goated-development.com",
+  "keywords": [
+    "discord.js",
+    "discord",
+    "command",
+    "permissions",
+    "events",
+    "handler"
+  ],
+  "devDependencies": {
+    "discord.js": "^14.7.1",
+    "typescript": "^5.6.3"
+  },
+  "main": "dist/index.js",
+  "author": "GoatedDevelopment",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/CaptainGoatee/DiscordHandler/issues"
+  }
+}
