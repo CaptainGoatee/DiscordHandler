@@ -1,6 +1,6 @@
 {
   "name": "goated-discord-handler",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "This is a fork of djs-commander. A command and event handler that works seamlessly with Discord.js",
   "author": "notunderctrl",
   "types": "./index.d.ts",
