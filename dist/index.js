@@ -227,6 +227,13 @@ function registerCommands(_0) {
         const existingCommand = applicationCommands2.cache.find(
           (cmd) => cmd.name === name
         );
+        let message = `🌐 Loading command "${name}".`;
+            if (logger) {
+              logger.info(message);
+            } else {
+              console.log(message);
+            }
+        // console.log(localCommand2); //DELETE THIS
         if (existingCommand) {
           if (localCommand2.deleted) {
             yield applicationCommands2.delete(existingCommand.id);
@@ -244,6 +251,13 @@ function registerCommands(_0) {
               options
             });
             let message = `\u{1F501} Edited command "${name}".`;
+            if (logger) {
+              logger.info(message);
+            } else {
+              console.log(message);
+            }
+          } else {
+            let message = `👍 Command "${name}" is up to date.`;
             if (logger) {
               logger.info(message);
             } else {
@@ -320,7 +334,9 @@ var DiscordHandler = class {
     validationsPath,
     testServer,
     logger,
-    logInteractions
+    logInteractions,
+    refreshCommands,
+    toggleCommands,
   }) {
     if (!client)
       throw new Error(
@@ -342,6 +358,8 @@ var DiscordHandler = class {
     this._validationFuncs = [];
     this._logger = logger;
     this._logInteractions = logInteractions;
+    this._refreshCommands = refreshCommands;
+    this._toggleCommands = toggleCommands;
     if (this._validationsPath && !commandsPath) {
       throw new Error(
         'Command validations are only available in the presence of a commands path. Either add "commandsPath" or remove "validationsPath"'
@@ -349,9 +367,9 @@ var DiscordHandler = class {
     }
     let logStatus;
     if (this._logInteractions) {
-      logStatus = "Logging interactions enabled.";
+      logStatus = 'Logging interactions enabled.';
     } else {
-      logStatus = "Logging interactions disabled. Interactions will not be logged in console.";
+      logStatus = 'Logging interactions disabled. Interactions will not be logged in console.';
     }
     if (this._logger) {
       this._logger.event(logStatus);
@@ -382,6 +400,92 @@ var DiscordHandler = class {
         this._handleCommands();
         this._handleButtons();
         this._handleInteractionLogging();
+
+        async function configAppCommand(_r, _t) {
+          const appCommands = await getAppCommands(client, testServer);
+          const existingCommand = appCommands.cache.find(
+            (cmd) => cmd.name === 'app'
+          );
+          if (existingCommand) {
+           appCommands.delete(existingCommand.id)
+          }
+
+          const refreshOptions = {
+            type: 1,
+            name: 'refresh_commands',
+            name_localizations: undefined,
+            description: 'Reload your discord commands and functions.',
+            description_localizations: undefined,
+            options: []
+          };
+
+          const enableOptions = {
+            type: 1,
+            name: 'enable',
+            name_localizations: undefined,
+            description: 'Enable a discord command you previously disabled.',
+            description_localizations: undefined,
+            options: [
+              {
+                autocomplete: undefined,
+                type: 3,
+                choices: undefined,
+                name: 'command',
+                name_localizations: undefined,
+                description: 'The command name you want to enable.',
+                description_localizations: undefined,
+                required: true,
+                max_length: undefined,
+                min_length: undefined
+              }
+            ]
+          };
+          const disableOptions = {
+            type: 1,
+            name: 'disable',
+            name_localizations: undefined,
+            description: 'Disable a discord command (This resets when the bot is restarted).',
+            description_localizations: undefined,
+            options: [
+              {
+                autocomplete: undefined,
+                type: 3,
+                choices: undefined,
+                name: 'command',
+                name_localizations: undefined,
+                description: 'The command name you want to disable.',
+                description_localizations: undefined,
+                required: true,
+                max_length: undefined,
+                min_length: undefined
+              }
+            ]
+          };
+
+          let appOptions = []
+
+          if (_r) {
+            appOptions.push(refreshOptions)
+          }
+          if (_t) {
+            appOptions.push(enableOptions)
+            appOptions.push(disableOptions)
+          }
+          
+          if (appOptions.length > 0) {
+            await appCommands.create({
+              options: appOptions,
+              name: 'app',
+              name_localizations: undefined,
+              description: 'Your Discord App Config Options',
+              description_localizations: undefined,
+              default_member_permissions: undefined,
+              dm_permission: undefined,
+              type: 1,
+            })
+          }
+        }
+        configAppCommand(this._refreshCommands, this._toggleCommands)
       });
     }
     if (this._eventsPath) {
@@ -462,34 +566,126 @@ var DiscordHandler = class {
         const command = this._commands.find(
           (cmd) => cmd.name === interaction.commandName
         );
-        if (command) {
-          if (this._validationFuncs.length) {
-            let canRun = true;
-            for (const validationFunc of this._validationFuncs) {
-              const cantRunCommand = yield validationFunc(
-                interaction,
-                command,
-                this,
-                this._client
-              );
-              if (cantRunCommand) {
-                canRun = false;
-                break;
+        if (interaction.commandName == 'app') {
+          yield interaction.deferReply({ephemeral: true});
+          // check if member has 'MANAGE_SERVER'
+          if (!interaction.member.permissions.has('MANAGE_SERVER')) {
+            return interaction.followUp({
+              content: 'You do not have permission to use this command.',
+              ephemeral: true,
+            })
+          }
+          const subCommand = interaction.options.getSubcommand() 
+          switch (subCommand) {
+            case 'refresh_commands':
+              try {
+                registerCommands({
+                  client: this._client,
+                  commands: this._commands,
+                  testServer: this._testServer,
+                  logger: this._logger
+                });
+                interaction.followUp('Commands have been reloaded! You may need to refresh your Discord.')
+              } catch (error) {
+                interaction.followUp('An error occurred while reloading commands.')
               }
+              
+              break;
+          
+            case 'enable':
+              const existingAppCommands = yield getAppCommands(this._client, this._testServer);
+              const existingAppCommand = existingAppCommands.cache.find(cmd => cmd.name === interaction.options.getString('command'));
+              if (existingAppCommand) {
+                return interaction.followUp('This command is already enabled.');
+              }
+              try {
+              for (const localCommand of this._commands) {
+                if (localCommand.name === interaction.options.getString('command')) {
+                  const {
+                    name,
+                    name_localizations,
+                    description,
+                    description_localizations,
+                    default_member_permissions,
+                    dm_permission,
+                    options
+                  } = localCommand;
+                
+
+                  let message = `🌐 Loading command "${name}".`;
+                  if (this._logger) {
+                    this._logger.info(message);
+                  } else {
+                    console.log(message);
+                  }
+
+                  yield existingAppCommands.create({
+                    name,
+                    name_localizations,
+                    description,
+                    description_localizations,
+                    default_member_permissions,
+                    dm_permission,
+                    options
+                  });
+                  let message2 = `\u2705 Registered command "${name}".`;
+                  if (this._logger) {
+                    this._logger.info(message2);
+                  } else {
+                    console.log(message2);
+                  }
+                  return interaction.followUp('This command is now enabled.');
+                }
+              }
+            } catch (e) {
+              console.log(e)
+              return interaction.followUp(`An error occured whilst trying to start command ${interaction.options.getString('command')}. Please check the command name.`)
             }
-            if (canRun) {
+
+            break;
+          
+            case 'disable':
+            const existingAppCommands2 = yield getAppCommands(this._client, this._testServer);
+              const existingAppCommand2 = existingAppCommands2.cache.find(cmd => cmd.name === interaction.options.getString('command'));
+              if (!existingAppCommand2) {
+                return interaction.followUp('This command is already disable or cannot be found.');
+              }
+              yield existingAppCommands2.delete(existingAppCommand2.id)
+              interaction.followUp('This command has been disabled.');
+              
+            break;
+          
+          }
+        } else {
+          if (command) {
+            if (this._validationFuncs.length) {
+              let canRun = true;
+              for (const validationFunc of this._validationFuncs) {
+                const cantRunCommand = yield validationFunc(
+                  interaction,
+                  command,
+                  this,
+                  this._client
+                );
+                if (cantRunCommand) {
+                  canRun = false;
+                  break;
+                }
+              }
+              if (canRun) {
+                yield command.run({
+                  interaction,
+                  client: this._client,
+                  handler: this
+                });
+              }
+            } else {
               yield command.run({
                 interaction,
                 client: this._client,
                 handler: this
               });
             }
-          } else {
-            yield command.run({
-              interaction,
-              client: this._client,
-              handler: this
-            });
           }
         }
       })
@@ -498,44 +694,43 @@ var DiscordHandler = class {
   _handleInteractionLogging() {
     this._client.on(
       "interactionCreate",
-      (interaction) => __async(
-        this,
-        null,
-        function* () {
-          let _i = interaction;
-          let _u = interaction.user;
-          const interactionTypes = {
-            1: "Ping",
-            2: "ApplicationCommand",
-            3: "MessageComponent",
-            4: "ApplicationCommandAutocomplete",
-            5: "ModalSubmit"
-          };
-          const componentTypes = {
-            1: "ActionRow",
-            2: "Button",
-            3: "StringSelect",
-            4: "TextInput",
-            5: "UserSelect",
-            6: "RoleSelect",
-            7: "MentionableSelect",
-            8: "ChannelSelect",
-            9: "SelectMenu"
-          };
-          if (this._logInteractions) {
-            let messageLog;
-            if (interaction.commandName) {
-              messageLog = `${_u.username} has used ${interactionTypes[_i.type]} - "${_i.commandName}".`;
-            } else {
-              messageLog = `${_u.username} has used a ${componentTypes[_i.componentType]} - "${_i.customId}".`;
-            }
-            if (this._logger) {
-              yield this._logger.event(messageLog);
-            } else {
-              console.log(messageLog);
-            }
+      (interaction) => __async(this, null, function* () {
+        let _i = interaction;
+        let _u = interaction.user;
+
+        const interactionTypes = {
+          1: 'Ping',
+          2: 'ApplicationCommand',
+          3: 'MessageComponent',
+          4: 'ApplicationCommandAutocomplete',
+          5: 'ModalSubmit'
+        };
+        const componentTypes = {
+          1: 'ActionRow',
+          2: 'Button',
+          3: 'StringSelect',
+          4: 'TextInput',
+          5: 'UserSelect',
+          6: 'RoleSelect',
+          7: 'MentionableSelect' ,
+          8: 'ChannelSelect',
+          9: 'SelectMenu' ,
+        }
+
+        if (this._logInteractions) {
+          let messageLog;
+          if (interaction.commandName) {
+           messageLog = `${_u.username} has used ${interactionTypes[_i.type]} - "${_i.commandName}".`
+          } else {
+            messageLog = `${_u.username} has used a ${componentTypes[_i.componentType]} - "${_i.customId}".`
+          }
+          if (this._logger) {
+            yield this._logger.event(messageLog);
+          } else {
+            console.log(messageLog);
           }
         }
+      }
       )
     );
   }
