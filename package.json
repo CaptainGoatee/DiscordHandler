@@ -1,6 +1,6 @@
 {
   "name": "goated-discord-handler",
-  "version": "0.2.2",
+  "version": "1.0.5",
   "description": "This is a fork of djs-commander. A command and event handler that works seamlessly with Discord.js",
   "author": "notunderctrl",
   "types": "./index.d.ts",
@@ -13,8 +13,11 @@
   "scripts": {
     "clean": "rm -rf dist",
     "build": "tsup src/index.js --format cjs,esm --clean",
+    "obfuscate": "javascript-obfuscator dist/index.js --output dist/index.js --compact true --self-defending true",
+    "obfuscate:mjs": "cp dist/index.mjs dist/index.tmp.js && javascript-obfuscator dist/index.tmp.js --output dist/index.tmp.js --compact true --self-defending true && mv dist/index.tmp.js dist/index.mjs",
+    "build:obf": "npm run build && npm run obfuscate && npm run obfuscate:mjs",
     "build:watch": "tsup src/index.js --format cjs,esm --watch",
-    "prepublishOnly": "yarn build"
+    "prepublishOnly": "npm run build:obf"
   },
   "repository": {
     "type": "git",
@@ -30,6 +33,7 @@
   ],
   "devDependencies": {
     "discord.js": "^14.7.1",
+    "javascript-obfuscator": "^4.1.1",
     "tsup": "^6.6.0",
     "typescript": "^4.9.5",
     "winston": "^3.8.2"
